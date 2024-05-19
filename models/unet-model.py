@@ -2,12 +2,13 @@ import keras
 from keras import layers
 
 
-def create_model_big(dense_neurons=256, input_shape=(224, 224, 3), num_classes=4):
+def create_model_big(dense_neurons=256, input_shape=(224, 224, 3), num_classes=4, dense_top=False):
     """
     Classic UNet model, as per https://arxiv.org/abs/1505.04597
     :param dense_neurons: number of units in dense layers
     :param input_shape: shape of input image
     :param num_classes: number of classes
+    :param dense_top: whether to use dense or convolutional classifier, WARNING: dense will drastically increase no. of parameters
     :return: model
     """
 
@@ -53,10 +54,14 @@ def create_model_big(dense_neurons=256, input_shape=(224, 224, 3), num_classes=4
     conv2d_9 = layers.Conv2D(64, 3, activation='relu', padding='same')(concat_4)
     conv2d_9 = layers.Conv2D(64, 3, activation='relu', padding='same')(conv2d_9)
 
-    flatten = layers.Flatten()(conv2d_9)
-    dense = layers.Dense(dense_neurons, activation='relu')(flatten)
-    dense = layers.Dense(dense_neurons, activation='relu')(dense)
-    output = layers.Dense(num_classes, activation='softmax')(dense)
+    if dense_top:
+        flatten = layers.Flatten()(conv2d_9)
+        dense = layers.Dense(dense_neurons, activation='relu')(flatten)
+        dense = layers.Dense(dense_neurons, activation='relu')(dense)
+        output = layers.Dense(num_classes, activation='softmax')(dense)
+    else:
+        conv = layers.Conv2D(3, 3, activation='relu')(conv2d_9)
+        output = layers.Conv2D(num_classes, 1, activation='softmax')(conv)
 
     model = keras.models.Model(inputs=input, outputs=output)
     model.summary()
@@ -64,12 +69,13 @@ def create_model_big(dense_neurons=256, input_shape=(224, 224, 3), num_classes=4
     return model
 
 
-def create_model_smaller(dense_neurons=256, input_shape=(224, 224, 3), num_classes=4):
+def create_model_smaller(dense_neurons=256, input_shape=(224, 224, 3), num_classes=4, dense_top=False):
     """
     Smaller variant of the UNet model - with just three skip-blocks, instead of four
     :param dense_neurons: number of units in dense layers
     :param input_shape: shape of input image
     :param num_classes: number of classes
+    :param dense_top: whether to use dense or convolutional classifier, WARNING: dense will drastically increase no. of parameters
     :return: model
     """
     # Downscaling part of the UNet
@@ -105,10 +111,14 @@ def create_model_smaller(dense_neurons=256, input_shape=(224, 224, 3), num_class
     conv2d_9 = layers.Conv2D(64, 3, activation='relu', padding='same')(concat_4)
     conv2d_9 = layers.Conv2D(64, 3, activation='relu', padding='same')(conv2d_9)
 
-    flatten = layers.Flatten()(conv2d_9)
-    dense = layers.Dense(dense_neurons, activation='relu')(flatten)
-    dense = layers.Dense(dense_neurons, activation='relu')(dense)
-    output = layers.Dense(num_classes, activation='softmax')(dense)
+    if dense_top:
+        flatten = layers.Flatten()(conv2d_9)
+        dense = layers.Dense(dense_neurons, activation='relu')(flatten)
+        dense = layers.Dense(dense_neurons, activation='relu')(dense)
+        output = layers.Dense(num_classes, activation='softmax')(dense)
+    else:
+        conv = layers.Conv2D(3, 3, activation='relu')(conv2d_9)
+        output = layers.Conv2D(num_classes, 1, activation='softmax')(conv)
 
     model = keras.models.Model(inputs=input, outputs=output)
     model.summary()
