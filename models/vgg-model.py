@@ -13,7 +13,8 @@ def create_vgg(dense_neurons=256, input_shape=(224, 224, 3), num_classes=4):
     vgg = tf.keras.applications.VGG16(include_top=False, weights='imagenet', input_shape=input_shape)
     vgg.trainable = False
 
-    dense = layers.Dense(dense_neurons, activation='relu')(vgg.output)
+    flatten = layers.Flatten()(vgg.output)
+    dense = layers.Dense(dense_neurons, activation='relu')(flatten)
     dense = layers.Dense(dense_neurons, activation='relu')(dense)
     output = layers.Dense(num_classes, activation='softmax')(dense)
 

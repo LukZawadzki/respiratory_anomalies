@@ -53,7 +53,8 @@ def create_model_big(dense_neurons=256, input_shape=(224, 224, 3), num_classes=4
     conv2d_9 = layers.Conv2D(64, 3, activation='relu', padding='same')(concat_4)
     conv2d_9 = layers.Conv2D(64, 3, activation='relu', padding='same')(conv2d_9)
 
-    dense = layers.Dense(dense_neurons, activation='relu')(conv2d_9)
+    flatten = layers.Flatten()(conv2d_9)
+    dense = layers.Dense(dense_neurons, activation='relu')(flatten)
     dense = layers.Dense(dense_neurons, activation='relu')(dense)
     output = layers.Dense(num_classes, activation='softmax')(dense)
 
@@ -104,7 +105,8 @@ def create_model_smaller(dense_neurons=256, input_shape=(224, 224, 3), num_class
     conv2d_9 = layers.Conv2D(64, 3, activation='relu', padding='same')(concat_4)
     conv2d_9 = layers.Conv2D(64, 3, activation='relu', padding='same')(conv2d_9)
 
-    dense = layers.Dense(dense_neurons, activation='relu')(conv2d_9)
+    flatten = layers.Flatten()(conv2d_9)
+    dense = layers.Dense(dense_neurons, activation='relu')(flatten)
     dense = layers.Dense(dense_neurons, activation='relu')(dense)
     output = layers.Dense(num_classes, activation='softmax')(dense)
 
