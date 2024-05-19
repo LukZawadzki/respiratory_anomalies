@@ -1,67 +1,108 @@
-from torch.utils.data import Dataset, DataLoader
-
 import os
-import pandas as pd
 
-class RespiratoryDataset(Dataset):
-    def __init__(self, test=False):
+import tensorflow as tf
+import librosa
+import numpy as np
 
-        self.transforms = None
-        self.recordings = []
-        self.data = pd.DataFrame(columns=[
-            'recording_id',
-            'patient number',
-            'recording index',
-            'chest location',
-            'acquisition mode',
-            'recording equipment',
-            # 'crackles',
-            # 'wheezes'
-        ])
-        if not test:
-            self.diagnosis = self._read_diagnosis('ICBHI_Challenge_diagnosis.txt')
 
-        data_path = 'ICBHI_final_database'
-        file_list = os.listdir(data_path)
-        for file in file_list:
-            file_name = file[:-3]
-            if f"{file_name}.txt" in file_list and f"{file_name}.wav" in file_list:
-                self.recordings.append(self._read_wav(os.path.join(data_path, f"{file_name}.wav")))
-                self.data.loc[len(self.data.index)] = self._parse_file_name(file_name)
+def _load_audio(file_path):
+    # Load the audio file using librosa
+    audio, sr = librosa.load(file_path.numpy(), sr=None, mono=True)
 
-    def __len__(self):
-        return len(self.data)
+    if sr != 44100:
+        print("Resampling from ", sr, " to 44100")
+        audio = librosa.resample(audio, orig_sr=sr, target_sr=44100)
+        sr = 44100
 
-    def __getitem__(self, idx):
-        data = self.data.iloc[idx]
-        recording = self.recordings[idx]
-        diagnosis = self.diagnosis[self.diagnosis['patient number'] == data['patient number']]['diagnosis']
-        return data, recording, diagnosis
+    audio = audio[:44100 * 20]
 
-    def _parse_file_name(self, file_name):
-        columns_keys = [
-            'patient number',
-            'recording index',
-            'chest location',
-            'acquisition mode',
-            'recording equipment'
-        ]
-        values = file_name.split('_')
-        return {key: value for key, value in zip(columns_keys, values)}
+    if len(audio) < 44100 * 20:
+        audio = np.pad(audio, (0, 44100 * 20 - len(audio)))
 
-    def _read_wav(self, path):
-        ## TODO - wczytywanie i przetwarzanie nagran
-        pass
+    return audio, sr
 
-    def _read_txt(self):
-        ## TODO - wczytywanie i przetwarzanie danych o cyklach oddechowych obecnych w narganiu
-        pass
+def _random_time_shift(audio, shift_max):
+    # Randomly shift the audio by up to shift_max samples
+    # shift = np.random.randint(-shift_max, shift_max)
+    # return np.roll(audio, shift)
+    return audio
 
-    def _read_diagnosis(self, diagnosis_file):
-        df_diagnosis = pd.DataFrame(columns=['patient number', 'diagnosis'])
-        with open(diagnosis_file, 'r') as file:
-            for line in file.readlines():
-                idx, diagnosis = line.split('\t')
-                new_row = {'patient number': idx, 'diagnosis': diagnosis[:-2]}
-                df_diagnosis.loc[len(df_diagnosis.index)] = new_row
-        return df_diagnosis
+def _random_spectral_clipping(audio, min_clipping, max_clipping):
+    # Randomly apply spectral clipping
+    # threshold = np.random.uniform(min_clipping, max_clipping)
+    # clipped_audio = np.clip(audio, -threshold, threshold)
+    # return clipped_audio
+    return audio
+
+
+def _compute_specgram(audio, sr):
+    # Compute the spectrogram of the audio
+    specgram = librosa.feature.melspectrogram(y=audio, sr=sr, n_mels=128, hop_length=1024, n_fft=2048)
+    specgram = librosa.power_to_db(specgram, ref=np.max)
+    return specgram
+
+def _preprocess_audio(file_path, shift_max, min_clipping, max_clipping):
+    
+    def func(fp, smax, minc, maxc):
+        audio, sr = _load_audio(fp)
+        audio = _random_time_shift(audio, smax)
+        audio = _random_spectral_clipping(audio, minc, maxc)
+        return _compute_specgram(audio, sr)[:, :512]
+    
+    return tf.py_function(func, [file_path, shift_max, min_clipping, max_clipping], Tout=tf.float32)
+
+
+def _get_label(file_path):
+    file_descriptor = file_path.replace('.wav', '.txt')
+
+    count_crackles = 0
+    count_wheezes = 0
+
+    with open(file_descriptor, 'r') as f:
+        for line in f:
+            split_line = line.split()
+
+            if split_line[2] == '1':
+                count_crackles += 1
+
+            if split_line[3] == '1':
+                count_wheezes += 1
+
+    if count_crackles > 0 and count_wheezes > 0:
+        return [0, 0, 0, 1]
+
+    if count_crackles > 0:
+        return [0, 0, 1, 0]
+
+    if count_wheezes > 0:
+        return [0, 1, 0, 0]
+
+    return [1, 0, 0, 0]
+
+
+class DataSetLoader:
+    """Loads the dataset and preprocesses the audio files."""
+
+    def __init__(self, dataset_folder, shift_max, min_clipping, max_clipping):
+
+        self._dataset_folder = dataset_folder
+        self._shift_max = shift_max
+        self._min_clipping = min_clipping
+        self._max_clipping = max_clipping
+
+    def create_dataset(self, batch_size, train_split=0.8):
+
+        file_paths = [os.path.join(self._dataset_folder, path) for path in os.listdir(
+            self._dataset_folder) if path.endswith('.wav')]
+        labels = [_get_label(path) for path in file_paths]
+
+        file_paths = tf.data.Dataset.from_tensor_slices(file_paths)
+        dataset = file_paths.map(lambda file_path: _preprocess_audio(file_path, self._shift_max, self._min_clipping, self._max_clipping),
+                                 num_parallel_calls=tf.data.experimental.AUTOTUNE)
+
+        dataset = tf.data.Dataset.zip((dataset, tf.data.Dataset.from_tensor_slices(labels)))
+
+        dataset = dataset.batch(batch_size)
+        dataset = dataset.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
+
+        return dataset.take(int(len(file_paths) * train_split)), dataset.skip(int(len(file_paths) * train_split))
