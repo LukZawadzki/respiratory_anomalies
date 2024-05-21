@@ -110,6 +110,6 @@ class DataSetLoader:
         dataset = tf.data.Dataset.zip((dataset, tf.data.Dataset.from_tensor_slices(labels)))
 
         dataset = dataset.batch(batch_size)
-        # dataset = dataset.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
+        dataset = dataset.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
 
-        return dataset.take(int(len(file_paths) * train_split)), dataset.skip(int(len(file_paths) * train_split))
+        return dataset.take(int(len(dataset) * train_split)), dataset.skip(int(len(dataset) * train_split))
