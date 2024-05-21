@@ -94,3 +94,12 @@ We propose a deep neural architecture consisting mainly of convolutional layers 
 
 The model's output is evaluated via set of scores. Those check whether the model accurately predicts the expected multi-class result. Due to the skewed distribution of dataset samples among various classes and recording appliances it is crucial to evaluate the model with respect to the classes to which a specific sample belongs.
 
+
+# Milestone 21.05
+
+## Dataset
+## Models
+### VGG16
+### UNet
+### ResNet
+## Training
