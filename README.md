@@ -98,7 +98,8 @@ The model's output is evaluated via set of scores. Those check whether the model
 # Milestone 21.05
 
 ## Dataset
-![source](https://bhichallenge.med.auth.gr/ICBHI_2017_Challenge)
+[source](https://bhichallenge.med.auth.gr/ICBHI_2017_Challenge)
+
 The ICBHI 2017 Challenge Respiratory Sound Database is a collection of 5.5 hours of audio recordings from 126 subjects, annotated by respiratory specialists to identify crackles, wheezes, or normal breath sounds. The recordings come from various chest locations and were captured using different stethoscopes and microphones. Additional information such as diagnoses (COPD, LRTI, URTI) and demographics (age, sex, BMI) is available for each subject. This freely available resource is valuable for training machine learning models to recognize respiratory anomalies.
 
 ## Models
@@ -114,7 +115,7 @@ Despite its relative simplicity compared to more recent models, VGG-16 remains a
 
 ![vgg16-architecture](https://media.geeksforgeeks.org/wp-content/uploads/20200219152207/new41.jpg)
 ### UNet
-U-Net is a widely used deep learning architecture that was first introduced in the ![U-Net: Convolutional Networks for Biomedical Image Segmentation](https://arxiv.org/abs/1505.04597v1) paper. The primary purpose of this architecture was to address the challenge of limited annotated data in the medical field thus this network was designed to effectively leverage a smaller amount of data while maintaining speed and accuracy. It consists of a two paths:
+U-Net is a widely used deep learning architecture that was first introduced in the [U-Net: Convolutional Networks for Biomedical Image Segmentation](https://arxiv.org/abs/1505.04597v1) paper. The primary purpose of this architecture was to address the challenge of limited annotated data in the medical field thus this network was designed to effectively leverage a smaller amount of data while maintaining speed and accuracy. It consists of a two paths:
 - Contracting Path (Encoder): This initial part resembles a standard convolutional neural network. It captures high-level features through repeated applications of 3x3 convolutions, ReLU activations, and 2x2 max pooling operations. Notably, the number of feature channels doubles with each downsampling step.
 - Expansive Path (Decoder): This path expands the captured features back to the original image resolution. Each step involves upsampling the feature map, halving the number of channels with a 2x2 convolution, and then concatenating it with cropped features from the contracting path at the same level. Finally, two 3x3 convolutions with ReLU activations are applied.
 - Output Layer: A final 1x1 convolution transforms the high-level features into predictions for the desired number of classes.
