@@ -128,3 +128,7 @@ ResNet50's strength is its deep convolutional architecture with residual connect
 ![resnet-architecture](https://miro.medium.com/v2/resize:fit:4800/format:webp/1*VM94wVftxP7wkiKo4BjfLA.png)
 
 ## Training
+
+### Resnet
+
+![work_overview](./doc/res/442008145_1251642612464115_318160251884808714_n.png)
