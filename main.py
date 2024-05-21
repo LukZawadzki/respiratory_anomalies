@@ -2,6 +2,7 @@ import dataloaders
 import logging
 import matplotlib.pyplot as plt
 import numpy as np
+import models.unetModel
 
 
 if __name__ == '__main__':
@@ -20,3 +21,13 @@ if __name__ == '__main__':
 
         plt.show()
 
+    model = models.unetModel.create_model_smaller()
+
+    # Kompilacja modelu
+    model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+
+    # Trenowanie modelu
+    history = model.fit(ds_train, epochs=10, batch_size=8)
+
+    # Wyświetlenie wyników treningu
+    print("Historia treningu:", history.history)
