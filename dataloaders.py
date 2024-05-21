@@ -10,7 +10,7 @@ def _load_audio(file_path):
     audio, sr = librosa.load(file_path.numpy(), sr=None, mono=True)
 
     if sr != 44100:
-        print("Resampling from ", sr, " to 44100")
+        # print("Resampling from ", sr, " to 44100")
         audio = librosa.resample(audio, orig_sr=sr, target_sr=44100)
         sr = 44100
 
@@ -47,7 +47,8 @@ def _preprocess_audio(file_path, shift_max, min_clipping, max_clipping):
         audio, sr = _load_audio(fp)
         audio = _random_time_shift(audio, smax)
         audio = _random_spectral_clipping(audio, minc, maxc)
-        return _compute_specgram(audio, sr)[:, :512]
+        audio = _compute_specgram(audio, sr)[:, :512]
+        return np.expand_dims(audio, 2)
     
     return tf.py_function(func, [file_path, shift_max, min_clipping, max_clipping], Tout=tf.float32)
 
@@ -69,15 +70,15 @@ def _get_label(file_path):
                 count_wheezes += 1
 
     if count_crackles > 0 and count_wheezes > 0:
-        return [0, 0, 0, 1]
+        return 3
 
     if count_crackles > 0:
-        return [0, 0, 1, 0]
+        return 2
 
     if count_wheezes > 0:
-        return [0, 1, 0, 0]
+        return 1
 
-    return [1, 0, 0, 0]
+    return 0
 
 
 class DataSetLoader:
@@ -103,6 +104,6 @@ class DataSetLoader:
         dataset = tf.data.Dataset.zip((dataset, tf.data.Dataset.from_tensor_slices(labels)))
 
         dataset = dataset.batch(batch_size)
-        dataset = dataset.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
+        # dataset = dataset.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
 
         return dataset.take(int(len(file_paths) * train_split)), dataset.skip(int(len(file_paths) * train_split))
