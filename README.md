@@ -130,7 +130,7 @@ ResNet50's strength is its deep convolutional architecture with residual connect
 ## Training
 
 Parameters:
-- Loss function: categorical crossentripy
+- Loss function: categorical crossentropy
 - Optimizer: Adam
 - Number of epochs: 10
 - Batch size: 8
