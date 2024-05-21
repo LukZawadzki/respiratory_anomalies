@@ -61,7 +61,8 @@ def create_model_big(dense_neurons=256, input_shape=(224, 224, 3), num_classes=4
         output = layers.Dense(num_classes, activation='softmax')(dense)
     else:
         conv = layers.Conv2D(3, 3, activation='relu')(conv2d_9)
-        output = layers.Conv2D(num_classes, 1, activation='softmax')(conv)
+        global_pooling = layers.GlobalAveragePooling2D()(conv)
+        output = layers.Dense(num_classes, activation='softmax')(global_pooling)
 
     model = keras.models.Model(inputs=input, outputs=output)
     model.summary()
@@ -118,7 +119,8 @@ def create_model_smaller(dense_neurons=256, input_shape=(224, 224, 3), num_class
         output = layers.Dense(num_classes, activation='softmax')(dense)
     else:
         conv = layers.Conv2D(3, 3, activation='relu')(conv2d_9)
-        output = layers.Conv2D(num_classes, 1, activation='softmax')(conv)
+        global_pooling = layers.GlobalAveragePooling2D()(conv)
+        output = layers.Dense(num_classes, activation='softmax')(global_pooling)
 
     model = keras.models.Model(inputs=input, outputs=output)
     model.summary()
