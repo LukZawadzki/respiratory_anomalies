@@ -98,8 +98,33 @@ The model's output is evaluated via set of scores. Those check whether the model
 # Milestone 21.05
 
 ## Dataset
+![source](https://bhichallenge.med.auth.gr/ICBHI_2017_Challenge)
+The ICBHI 2017 Challenge Respiratory Sound Database is a collection of 5.5 hours of audio recordings from 126 subjects, annotated by respiratory specialists to identify crackles, wheezes, or normal breath sounds. The recordings come from various chest locations and were captured using different stethoscopes and microphones. Additional information such as diagnoses (COPD, LRTI, URTI) and demographics (age, sex, BMI) is available for each subject. This freely available resource is valuable for training machine learning models to recognize respiratory anomalies.
+
 ## Models
 ### VGG16
+
+The VGG-16 neural network is a convolutional neural network (CNN) known for its simplicity and effectiveness in image recognition. It achieves this through a stacked architecture of convolutional and pooling layers that extract increasingly complex features from images. Here's the breakdown:
+
+- Convolutional Layers: These layers apply filters to the image, identifying patterns and edges. VGG-16 uses small filters (3x3) stacked together, increasing in number as the network progresses (64, 128, 256, 512).
+- Pooling Layers: These layers reduce the image size while preserving important features. VGG-16 uses max pooling, which takes the maximum value from a small grid of pixels.
+- Fully Connected Layers: These layers connect all neurons from the previous layer, allowing for complex classifications. VGG-16 has three fully-connected layers with ReLU activation, leading to a final output layer with probabilities for 1000 classes (Softmax activation).
+
+Despite its relative simplicity compared to more recent models, VGG-16 remains a popular choice for its strong performance and ease of use.
+
+![vgg16-architecture](https://media.geeksforgeeks.org/wp-content/uploads/20200219152207/new41.jpg)
 ### UNet
+U-Net is a deep learning architecture designed for semantic segmentation, meaning it predicts labels for each pixel in an image. It tackles this challenge with a unique U-shaped structure:
+
+- Contracting Path (Encoder): This initial part resembles a standard convolutional neural network. It captures high-level features through repeated applications of 3x3 convolutions, ReLU activations, and 2x2 max pooling operations. Notably, the number of feature channels doubles with each downsampling step.
+- Expansive Path (Decoder): This path expands the captured features back to the original image resolution. Each step involves upsampling the feature map, halving the number of channels with a 2x2 convolution, and then concatenating it with cropped features from the contracting path at the same level. Finally, two 3x3 convolutions with ReLU activations are applied.
+- Output Layer: A final 1x1 convolution transforms the high-level features into predictions for the desired number of classes.
+
+![unet-architecture](https://production-media.paperswithcode.com/methods/Screen_Shot_2020-07-07_at_9.08.00_PM_rpNArED.png)
 ### ResNet
+
+ResNet50's strength is its deep convolutional architecture with residual connections. These connections allow it to learn much deeper than previous models by adding the original input to later layers, bypassing vanishing gradients. The network relies on identity and convolutional blocks for processing, with convolutions extracting features and identity blocks preserving information. Batch normalization and ReLU activations further enhance training and decision-making.
+
+![resnet-architecture](https://miro.medium.com/v2/resize:fit:4800/format:webp/1*VM94wVftxP7wkiKo4BjfLA.png)
+
 ## Training
