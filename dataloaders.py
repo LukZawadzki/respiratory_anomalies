@@ -41,16 +41,21 @@ def _compute_specgram(audio, sr):
     specgram = librosa.power_to_db(specgram, ref=np.max)
     return specgram
 
-def _preprocess_audio(file_path, shift_max, min_clipping, max_clipping):
+def _preprocess_audio(file_path, shift_max, min_clipping, max_clipping, extend_to_three_channels):
     
-    def func(fp, smax, minc, maxc):
+    def func(fp, smax, minc, maxc, extend):
         audio, sr = _load_audio(fp)
         audio = _random_time_shift(audio, smax)
         audio = _random_spectral_clipping(audio, minc, maxc)
         audio = _compute_specgram(audio, sr)[:, :512]
-        return np.expand_dims(audio, 2)
+        audio = np.expand_dims(audio, 2)
+
+        if extend:
+            audio = np.concatenate([audio, audio, audio], 2)
+
+        return audio
     
-    return tf.py_function(func, [file_path, shift_max, min_clipping, max_clipping], Tout=tf.float32)
+    return tf.py_function(func, [file_path, shift_max, min_clipping, max_clipping, extend_to_three_channels], Tout=tf.float32)
 
 
 def _get_label(file_path):
@@ -84,12 +89,13 @@ def _get_label(file_path):
 class DataSetLoader:
     """Loads the dataset and preprocesses the audio files."""
 
-    def __init__(self, dataset_folder, shift_max, min_clipping, max_clipping):
+    def __init__(self, dataset_folder, shift_max, min_clipping, max_clipping, extend_to_three_channels=False):
 
         self._dataset_folder = dataset_folder
         self._shift_max = shift_max
         self._min_clipping = min_clipping
         self._max_clipping = max_clipping
+        self._extend_to_three_channels = extend_to_three_channels
 
     def create_dataset(self, batch_size, train_split=0.8):
 
@@ -98,7 +104,7 @@ class DataSetLoader:
         labels = [_get_label(path) for path in file_paths]
 
         file_paths = tf.data.Dataset.from_tensor_slices(file_paths)
-        dataset = file_paths.map(lambda file_path: _preprocess_audio(file_path, self._shift_max, self._min_clipping, self._max_clipping),
+        dataset = file_paths.map(lambda file_path: _preprocess_audio(file_path, self._shift_max, self._min_clipping, self._max_clipping, self._extend_to_three_channels),
                                  num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
         dataset = tf.data.Dataset.zip((dataset, tf.data.Dataset.from_tensor_slices(labels)))
