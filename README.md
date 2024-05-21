@@ -104,7 +104,7 @@ The ICBHI 2017 Challenge Respiratory Sound Database is a collection of 5.5 hours
 ## Models
 ### VGG16
 
-The VGG-16 neural network is a convolutional neural network (CNN) known for its simplicity and effectiveness in image recognition. It achieves this through a stacked architecture of convolutional and pooling layers that extract increasingly complex features from images. Here's the breakdown:
+The VGG-16 neural network is a convolutional neural network (CNN) known for its simplicity and effectiveness achieved through a stacked architecture of convolutional and pooling layers that extract increasingly complex features from images. Here's the breakdown:
 
 - Convolutional Layers: These layers apply filters to the image, identifying patterns and edges. VGG-16 uses small filters (3x3) stacked together, increasing in number as the network progresses (64, 128, 256, 512).
 - Pooling Layers: These layers reduce the image size while preserving important features. VGG-16 uses max pooling, which takes the maximum value from a small grid of pixels.
@@ -114,8 +114,7 @@ Despite its relative simplicity compared to more recent models, VGG-16 remains a
 
 ![vgg16-architecture](https://media.geeksforgeeks.org/wp-content/uploads/20200219152207/new41.jpg)
 ### UNet
-U-Net is a deep learning architecture designed for semantic segmentation, meaning it predicts labels for each pixel in an image. It tackles this challenge with a unique U-shaped structure:
-
+U-Net is a widely used deep learning architecture that was first introduced in the ![U-Net: Convolutional Networks for Biomedical Image Segmentation](https://arxiv.org/abs/1505.04597v1) paper. The primary purpose of this architecture was to address the challenge of limited annotated data in the medical field thus this network was designed to effectively leverage a smaller amount of data while maintaining speed and accuracy. It consists of a two paths:
 - Contracting Path (Encoder): This initial part resembles a standard convolutional neural network. It captures high-level features through repeated applications of 3x3 convolutions, ReLU activations, and 2x2 max pooling operations. Notably, the number of feature channels doubles with each downsampling step.
 - Expansive Path (Decoder): This path expands the captured features back to the original image resolution. Each step involves upsampling the feature map, halving the number of channels with a 2x2 convolution, and then concatenating it with cropped features from the contracting path at the same level. Finally, two 3x3 convolutions with ReLU activations are applied.
 - Output Layer: A final 1x1 convolution transforms the high-level features into predictions for the desired number of classes.
