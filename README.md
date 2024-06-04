@@ -140,6 +140,9 @@ Parameters:
 
 ### UNet
 ![work_overview](./doc/res/436642090_996581054744648_3592856770752807820_n.png)
+![work_overview](./results/loss_unetBig_10epoch.png)
+![work_overview](./results/accuracy_unetBig_10epoch.png)
+
 
 
 ### Resnet
