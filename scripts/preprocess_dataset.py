@@ -73,14 +73,18 @@ def _preprocess_audio(audio, shift_max, min_clipping, max_clipping, extend_to_th
     audio = _random_time_shift(audio, shift_max)
 
     # create the spectrogram
-    audio = abs(librosa.stft(audio, n_fft=1024, hop_length=512))
+    audio = np.abs(librosa.stft(audio, n_fft=1024, hop_length=512))
+    audio = librosa.amplitude_to_db(audio, ref=np.max)
+    audio += abs(np.min(audio))
     audio = audio[:64, :128]
 
     # random spectral clipping
     clipped_part = np.random.uniform(min_clipping, max_clipping)
     clipped_mels = int(clipped_part * len(audio))
     clipped_start = np.random.randint(0, len(audio) - clipped_mels)
-    audio[clipped_start:clipped_start + clipped_mels, :] = 0
+    audio[clipped_start:clipped_start + clipped_mels, :] = 0.0
+
+    audio /= np.max(audio)
 
     audio = np.expand_dims(audio, 2)
 
@@ -95,14 +99,14 @@ def main(args: argparse.Namespace):
     """Loads the dataset, preprocess the files and writes them to a new folder."""
 
     file_paths = [os.path.join(args.dataset_folder, path) for path in os.listdir(
-        args.dataset_folder) if path.endswith('.wav')][130:150]
+        args.dataset_folder) if path.endswith('.wav')]
 
     sampling_rate = 22050
     target_size = sampling_rate * 3
 
     out_file_index = 0
 
-    for _ in range(1):
+    for _ in range(5):
 
         for file_path in file_paths:
 
@@ -111,9 +115,9 @@ def main(args: argparse.Namespace):
                 output_path = os.path.join(
                     args.output_folder, f'file_{out_file_index}_{label}.npy')
                 
-                wav_path = output_path.replace('.npy', '.wav')
+                # wav_path = output_path.replace('.npy', '.wav')
 
-                soundfile.write(wav_path, audio, sampling_rate)
+                # soundfile.write(wav_path, audio, sampling_rate)
                 
                 audio = _preprocess_audio(audio, args.shift_max, args.min_clipping,
                                           args.max_clipping, args.extend_to_three_channels, target_size, sampling_rate)
