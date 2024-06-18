@@ -149,3 +149,8 @@ Parameters:
 
 ![work_overview](./doc/res/442008145_1251642612464115_318160251884808714_n.png)
 ![image](https://github.com/LukZawadzki/respiratory_anomalies/assets/92645981/84001327-8eb4-4dc7-b999-ee3de588bb6f)
+
+## Training with preprocess
+
+### VGG16
+![work_overview](./results/vgg_preprocess_results.png)
